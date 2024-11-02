@@ -1,34 +1,32 @@
-#ifndef JSON_READER_H
-#define JSON_READER_H
+#ifndef JSONREADER_H
+#define JSONREADER_H
 
 #include <QObject>
-#include <QVariant>
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
+#include <QVariantList>
+#include <QUuid>
 
-class JsonReader : public QObject
-{
+class JsonReader : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QVariantList commands READ commands NOTIFY commandsChanged)
+    Q_PROPERTY(QVariantList commands READ getCommands NOTIFY commandsChanged)
+    Q_PROPERTY(QVariantList selectedCommands READ getSelectedCommands NOTIFY selectedCommandsChanged)
 
 public:
     explicit JsonReader(QObject *parent = nullptr);
 
-    bool loadJson(const QString &filePath);
-    QVariantList commands() const;
+    QVariantList getCommands() const;
+    QVariantList getSelectedCommands() const;
+
+    Q_INVOKABLE void loadJson(const QString &filePath);
+    Q_INVOKABLE void addCommand(const QVariantMap &command);
+    Q_INVOKABLE void updateParameterValue(const QString &uuid, const QString &paramName, const QVariant &value);
 
 signals:
     void commandsChanged();
-    void parameterUpdated(const QString &paramName, const QVariant &value);
-
-public slots:
-    void updateParameterValue(const QString &paramName, const QVariant &value);
+    void selectedCommandsChanged();
 
 private:
     QVariantList m_commands;
+    QVariantList m_selectedCommands;
 };
 
-
-#endif // JSON_READER_H
+#endif // JSONREADER_H
