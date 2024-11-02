@@ -29,7 +29,6 @@ ApplicationWindow {
         // نمایش هر کامند به صورت فرم جداگانه
         Repeater {
             model: selectedCommands
-
             Column {
                 width: parent.width
                 spacing: 5
@@ -43,6 +42,9 @@ ApplicationWindow {
                 // نمایش هر پارامتر به صورت ورودی فرم
                 Repeater {
                     model: modelData["parameters"];
+
+                    id:selectedCommandsId
+                    property int seIndex: index
                     Loader {
                         active: true
                         sourceComponent: {
@@ -61,8 +63,7 @@ ApplicationWindow {
                         onLoaded: {
                             if (item) {
                                 item.modelData = modelData;
-                                item.commandUuid = uuid;
-                                item.commandUuid = selectedCommands[index]["uuid"]; // UUID کامند سطح بالاتر
+                                item.commandUuid = selectedCommands[selectedCommandsId.seIndex]["uuid"]; // UUID کامند سطح بالاتر
                             }
                         }
 
@@ -110,7 +111,13 @@ ApplicationWindow {
             onClicked: commandSelectionDialog.close()
         }
     }
+    Connections {
+        target: jsonReader
 
+        onParameterUpdated: function(commandUuid, parameterName, newValue) {
+            console.log("Parameter", parameterName, "updated for command with UUID", commandUuid, "to value", newValue)
+        }
+    }
     Component {
         id: textFieldComponent
         TextField {
@@ -120,7 +127,7 @@ ApplicationWindow {
             placeholderText: modelData["name"]
             text: modelData["defaultValue"]
 
-            onTextChanged: {
+            onTextEdited: {
                 jsonReader.updateParameterValue(commandUuid, modelData["name"], text)
             }
         }

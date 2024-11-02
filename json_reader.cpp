@@ -66,11 +66,31 @@ void JsonReader::addCommand(const QVariantMap &command) {
     qDebug() <<"uuid"<<commandWithUuid["uuid"];
     //qDebug() <<"commandWithUuid"<<commandWithUuid;
     m_selectedCommands.append(commandWithUuid);
-    qDebug() <<"m_selectedCommands"<<m_selectedCommands;
+   // qDebug() <<"m_selectedCommands"<<m_selectedCommands;
     emit selectedCommandsChanged();
 }
 
-void JsonReader::updateParameterValue(const QString &uuid, const QString &paramName, const QVariant &value) {
-    qDebug() << "Updating parameter" << paramName << "for command with UUID" << uuid << "to value" << value;
-    // کد بروزرسانی مقدار پارامتر را اینجا اضافه کنید
+void JsonReader::updateParameterValue(const QString &commandUuid, const QString &parameterName, const QVariant &newValue) {
+    for (int i = 0; i < m_selectedCommands.size(); ++i) {
+        QVariantMap command = m_selectedCommands[i].toMap();
+
+        if (command["uuid"].toString() == commandUuid) {
+            QVariantList parameters = command["parameters"].toList();
+
+            for (int j = 0; j < parameters.size(); ++j) {
+                QVariantMap param = parameters[j].toMap();
+
+                if (param["name"].toString() == parameterName) {
+                    param["defaultValue"] = newValue;
+                    parameters[j] = param;
+                    command["parameters"] = parameters;
+                    m_selectedCommands[i] = command;
+
+                    emit parameterUpdated(commandUuid, parameterName, newValue);  // ارسال سیگنال جدید به جای selectedCommandsChanged
+                    qDebug() << "Parameter" << parameterName << "updated for command with UUID" << commandUuid << "to value" << newValue;
+                    return;
+                }
+            }
+        }
+    }
 }

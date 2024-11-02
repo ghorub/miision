@@ -18,11 +18,12 @@ public:
 
     Q_INVOKABLE void loadJson(const QString &filePath);
     Q_INVOKABLE void addCommand(const QVariantMap &command);
-    Q_INVOKABLE void updateParameterValue(const QString &uuid, const QString &paramName, const QVariant &value);
+    Q_INVOKABLE void updateParameterValue(const QString &commandUuid, const QString &parameterName, const QVariant &newValue);
 
 signals:
     void commandsChanged();
     void selectedCommandsChanged();
+    void parameterUpdated(const QString &commandUuid, const QString &parameterName, const QVariant &newValue);  // سیگنال جدید
 
 private:
     QVariantList m_commands;
