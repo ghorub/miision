@@ -4,7 +4,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDebug>
-
+#include <QDataStream>
 JsonReader::JsonReader(QObject *parent) : QObject(parent) {}
 
 QVariantList JsonReader::getCommands() const {
@@ -93,4 +93,81 @@ void JsonReader::updateParameterValue(const QString &commandUuid, const QString 
             }
         }
     }
+}
+void JsonReader::saveFormDataAsJson(const QString &filePath) {
+    QJsonArray commandsArray;
+
+    for (const auto &commandVariant : m_selectedCommands) {
+        QVariantMap command = commandVariant.toMap();
+        QJsonObject commandObj;
+        commandObj["commandId"] = command["commandId"].toString();
+        commandObj["name"] = command["name"].toString();
+
+        QJsonArray paramsArray;
+        QVariantList parameters = command["parameters"].toList();
+        for (const auto &paramVariant : parameters) {
+            QVariantMap param = paramVariant.toMap();
+            QJsonObject paramObj;
+            paramObj["name"] = param["name"].toString();
+            paramObj["value"] = QJsonValue::fromVariant(param["defaultValue"]);
+            paramsArray.append(paramObj);
+        }
+
+        commandObj["parameters"] = paramsArray;
+        commandsArray.append(commandObj);
+    }
+
+    QJsonDocument doc(commandsArray);
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(doc.toJson());
+        file.close();
+    }
+}
+void JsonReader::saveFormDataAsBinary(const QString &filePath) {
+    QVector<qint32> valuesArray;
+
+    for (const auto &commandVariant : m_selectedCommands) {
+        QVariantMap command = commandVariant.toMap();
+        QVariantList parameters = command["parameters"].toList();
+        for (const auto &paramVariant : parameters) {
+            QVariantMap param = paramVariant.toMap();
+            QVariant value = param["defaultValue"];
+            if (value.canConvert<qint32>()) {
+                valuesArray.append(value.toInt());
+            }
+        }
+    }
+
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly)) {
+        QDataStream out(&file);
+        for (qint32 val : valuesArray) {
+            out << val;
+        }
+        file.close();
+    }
+}
+void JsonReader::loadFormDataFromJson(const QString &filePath) {
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return;
+    }
+
+    QByteArray jsonData = file.readAll();
+    file.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+    if (!doc.isArray()) {
+        return;
+    }
+
+    m_selectedCommands.clear();
+    QJsonArray commandsArray = doc.array();
+    for (const QJsonValue &commandValue : commandsArray) {
+        QVariantMap command = commandValue.toObject().toVariantMap();
+        m_selectedCommands.append(command);
+    }
+
+    emit selectedCommandsChanged();
 }

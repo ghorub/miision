@@ -18,12 +18,21 @@ ApplicationWindow {
             spacing: 10
             Button {
                 text: "Load JSON Template"
-                onClicked: jsonReader.loadJson("path/to/your/jsonfile.json")  // مسیر فایل JSON
+                onClicked: jsonReader.loadJson("d:/jsonfile.json")  // مسیر فایل JSON
             }
             Button {
                 text: "Add Command"
                 onClicked: commandSelectionDialog.open()  // باز کردن دیالوگ انتخاب دستورات
             }
+            Button {
+                text: "Save Form as JSON"
+                onClicked: jsonReader.saveFormDataAsJson("d:/formData.json")
+            }
+            Button {
+                text: "Save Form as Binary"
+                onClicked: jsonReader.saveFormDataAsBinary("d:/formData.bin")
+            }
+
         }
 
         // نمایش هر کامند به صورت فرم جداگانه
