@@ -47,18 +47,7 @@ ApplicationWindow {
                     property int seIndex: index
                     Loader {
                         active: true
-                        sourceComponent: {
-                            var paramType = modelData["type"];
-                            if (paramType === "textField") {
-                                textFieldComponent
-                            } else if (paramType === "comboBox") {
-                                comboBoxComponent
-                            } else if (paramType === "checkBox") {
-                                checkBoxComponent
-                            } else {
-                                null
-                            }
-                        }
+                        sourceComponent: Qt.createComponent(modelData["type"] + "Component.qml")
 
                         onLoaded: {
                             if (item) {
@@ -118,48 +107,5 @@ ApplicationWindow {
             console.log("Parameter", parameterName, "updated for command with UUID", commandUuid, "to value", newValue)
         }
     }
-    Component {
-        id: textFieldComponent
-        TextField {
-            property var modelData
-            property string commandUuid // تعریف commandUuid به‌عنوان خاصیت
 
-            placeholderText: modelData["name"]
-            text: modelData["defaultValue"]
-
-            onTextEdited: {
-                jsonReader.updateParameterValue(commandUuid, modelData["name"], text)
-            }
-        }
-    }
-
-    Component {
-        id: comboBoxComponent
-        ComboBox {
-            property var modelData
-            property string commandUuid
-
-            model: modelData["options"]
-            currentIndex: modelData["options"].indexOf(modelData["defaultValue"])
-
-            onActivated: {
-                jsonReader.updateParameterValue(commandUuid, modelData["name"], currentText)
-            }
-        }
-    }
-
-    Component {
-        id: checkBoxComponent
-        CheckBox {
-            property var modelData
-            property string commandUuid
-
-            text: modelData["name"]
-            checked: modelData["defaultValue"]
-
-            onCheckedChanged: {
-                jsonReader.updateParameterValue(commandUuid, modelData["name"], checked)
-            }
-        }
-    }
 }

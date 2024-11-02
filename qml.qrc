@@ -1,5 +1,8 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
+        <file>textFieldComponent.qml</file>
+        <file>comboBoxComponent.qml</file>
+        <file>checkBoxComponent.qml</file>
     </qresource>
 </RCC>
