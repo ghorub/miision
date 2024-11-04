@@ -47,11 +47,18 @@ void JsonReader::loadJson(const QString &filePath) {
             parameter["name"] = paramObj["name"].toString();
             parameter["type"] = paramObj["type"].toString();
             parameter["defaultValue"] = paramObj["defaultValue"].toVariant();
+            if (paramObj.contains("minValue")) {
+                parameter["minValue"] = paramObj["minValue"].toVariant();
+            }
+            if (paramObj.contains("maxValue")) {
+                parameter["maxValue"] = paramObj["maxValue"].toVariant();
+            }
             if (paramObj.contains("options")) {
                 parameter["options"] = paramObj["options"].toVariant();
             }
             parameters.append(parameter);
         }
+
         command["parameters"] = parameters;
         m_commands.append(command);
     }
@@ -81,19 +88,35 @@ void JsonReader::updateParameterValue(const QString &commandUuid, const QString 
                 QVariantMap param = parameters[j].toMap();
 
                 if (param["name"].toString() == parameterName) {
-                    param["defaultValue"] = newValue;
-                    parameters[j] = param;
-                    command["parameters"] = parameters;
-                    m_selectedCommands[i] = command;
+                    bool isInRange = true;
 
-                    emit parameterUpdated(commandUuid, parameterName, newValue);  // ارسال سیگنال جدید به جای selectedCommandsChanged
-                    qDebug() << "Parameter" << parameterName << "updated for command with UUID" << commandUuid << "to value" << newValue;
+                    if (param.contains("minValue") && param.contains("maxValue")) {
+                        int minValue = param["minValue"].toInt();
+                        int maxValue = param["maxValue"].toInt();
+                        int newVal = newValue.toInt();
+
+                        if (newVal < minValue || newVal > maxValue) {
+                            qWarning() << "Value" << newVal << "out of range for parameter" << parameterName;
+                            isInRange = false;
+                        }
+                    }
+
+                    if (isInRange) {
+                        param["defaultValue"] = newValue;
+                        parameters[j] = param;
+                        command["parameters"] = parameters;
+                        m_selectedCommands[i] = command;
+
+                        emit parameterUpdated(commandUuid, parameterName, newValue);
+                        qDebug() << "Parameter" << parameterName << "updated for command with UUID" << commandUuid << "to value" << newValue;
+                    }
                     return;
                 }
             }
         }
     }
 }
+
 void JsonReader::saveFormDataAsJson(const QString &filePath) {
     QJsonArray commandsArray;
 

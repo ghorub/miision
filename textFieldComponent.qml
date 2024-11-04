@@ -9,6 +9,14 @@ TextField {
     text: modelData["defaultValue"]
 
     onTextChanged: {
-        jsonReader.updateParameterValue(commandUuid, modelData["name"], text)
+        let minValue = modelData["minValue"];
+        let maxValue = modelData["maxValue"];
+        let inputValue = parseInt(text, 10);
+
+        if (!isNaN(inputValue) && (minValue === undefined || inputValue >= minValue) && (maxValue === undefined || inputValue <= maxValue)) {
+            jsonReader.updateParameterValue(commandUuid, modelData["name"], inputValue);
+        } else {
+            console.log("Value out of range");
+        }
     }
 }

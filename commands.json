@@ -2,13 +2,15 @@
     "commands": [
         {
             "name": "Command1",
-			"commandId" : 1001,
+            "commandId": 1001,
             "category": "Category1",
             "parameters": [
                 {
                     "name": "Param1",
                     "type": "textField",
-                    "defaultValue": "Default1"
+                    "defaultValue": "5",
+                    "minValue": 1,
+                    "maxValue": 10
                 },
                 {
                     "name": "Param2",
@@ -19,7 +21,7 @@
         },
         {
             "name": "Command2",
-			"commandId" : 1002,
+            "commandId": 1002,
             "category": "Category2",
             "parameters": [
                 {
