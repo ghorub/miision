@@ -8,15 +8,31 @@ TextField {
     placeholderText: modelData["name"]
     text: modelData["defaultValue"]
 
-    onTextChanged: {
-        let minValue = modelData["minValue"];
-        let maxValue = modelData["maxValue"];
-        let inputValue = parseInt(text, 10);
+    // خصوصیت برای تعیین رنگ پس‌زمینه فیلد بر اساس اعتبار مقدار
+    background: Rectangle {
+        color: isValid ? "white" : "lightcoral"
+        border.color: "gray"
+        radius: 4
+    }
 
-        if (!isNaN(inputValue) && (minValue === undefined || inputValue >= minValue) && (maxValue === undefined || inputValue <= maxValue)) {
-            jsonReader.updateParameterValue(commandUuid, modelData["name"], inputValue);
-        } else {
-            console.log("Value out of range");
+    // خصوصیت کمکی برای بررسی اعتبار مقدار
+    property bool isValid: {
+        let minValue = modelData["minValue"] !== undefined ? modelData["minValue"] : Number.MIN_SAFE_INTEGER;
+        let maxValue = modelData["maxValue"] !== undefined ? modelData["maxValue"] : Number.MAX_SAFE_INTEGER;
+        let intValue = parseInt(text, 10);
+
+        // بررسی اینکه مقدار ورودی عددی است و در محدوده معتبر قرار دارد
+        return !isNaN(intValue) && intValue >= minValue && intValue <= maxValue;
+    }
+
+    // بررسی مقدار ورودی و ارسال به backend فقط در صورت معتبر بودن
+    onTextChanged: {
+        console.log(isValid)
+        if (isValid) {
+            jsonReader.updateParameterValue(commandUuid, modelData["name"], parseInt(text, 10));
         }
     }
+
+    // جلوگیری از وارد کردن کاراکترهای غیرعددی توسط کاربر
+    inputMethodHints: Qt.ImhFormattedNumbersOnly
 }
